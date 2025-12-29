@@ -1,0 +1,192 @@
+# ====================
+# OS generated files
+# ====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# ====================
+# IDE / Editor
+# ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# ====================
+# Python
+# ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ====================
+# ROS2
+# ====================
+install/
+log/
+build/
+*.pyc
+*.pyo
+.colcon/
+
+# ROS bag files
+*.bag
+*.db3
+*.db3-shm
+*.db3-wal
+
+# ====================
+# Isaac Sim
+# ====================
+# Cache and temp files
+.isaac_sim/
+_isaac_sim/
+*.cache
+*.tmp
+
+# Generated USD files (keep source, ignore compiled)
+*.usdc
+*.usdz
+!src/simulation/worlds/*.usd
+!src/simulation/robots/*.usd
+
+# Nucleus local cache
+.nvidia-omniverse/
+
+# Isaac Sim logs
+*.log
+kit/logs/
+
+# ====================
+# Docker
+# ====================
+.docker/
+*.dockerfile.bak
+
+# ====================
+# ML / Models
+# ====================
+# Large model files (use Git LFS or external storage)
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.h5
+*.pb
+*.weights
+!src/perception/models/.gitkeep
+
+# Training artifacts
+runs/
+wandb/
+mlruns/
+lightning_logs/
+checkpoints/
+
+# Dataset (should be downloaded separately)
+data/
+datasets/
+
+# ====================
+# Build artifacts
+# ====================
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# ====================
+# Logs and temp files
+# ====================
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# ====================
+# Secrets and configs
+# ====================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+credentials/
+
+# ====================
+# Documentation build
+# ====================
+docs/_build/
+docs/site/
+*.pdf
+
+# ====================
+# Misc
+# ====================
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Large files (maps, point clouds)
+*.pcd
+*.ply
+*.las
+*.laz
+!src/navigation/config/maps/*.yaml
+!src/navigation/config/maps/*.pgm
