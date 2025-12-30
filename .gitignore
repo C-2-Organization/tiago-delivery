@@ -190,3 +190,6 @@ docs/site/
 *.laz
 !src/navigation/config/maps/*.yaml
 !src/navigation/config/maps/*.pgm
+
+# External dependencies
+ros2_ws/src/tiago_isaac/
