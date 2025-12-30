@@ -128,7 +128,7 @@ pip install vcstool
 
 ```bash
 cd /home/ubuntu
-git clone https://github.com/<your-org>/tiago-delivery.git
+git clone https://github.com/C-2-Organization/tiago-delivery.git
 cd tiago-delivery
 
 # Fetch external dependencies (tiago_isaac)
@@ -234,7 +234,7 @@ If you're running locally instead of EC2, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<your-org>/tiago-delivery.git
+git clone https://github.com/C-2-Organization/tiago-delivery.git
 cd tiago-delivery
 ```
 
