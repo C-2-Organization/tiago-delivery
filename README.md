@@ -1,4 +1,4 @@
-# Last 100m Delivery Robot
+# TIAGo Delivery Robot
 
 An autonomous indoor delivery robot system for apartment buildings, built with Isaac Sim and ROS2.
 
@@ -79,18 +79,162 @@ tiago-delivery/
 
 ## Prerequisites
 
-- Ubuntu 22.04
-- ROS2 Humble
-- NVIDIA Isaac Sim 5.0.0
-- NVIDIA RTX GPU (for Isaac Sim)
+- AWS EC2 with NVIDIA GPU (g5.2xlarge or higher recommended)
+- NVIDIA Isaac Sim 4.2.0
+- Docker
 - Python 3.10
 
-## Installation
+## Environment Setup (AWS EC2)
+
+This project is designed to run on AWS EC2 with NVIDIA's official Isaac Sim AMI and Docker-based ROS2 Humble environment.
+
+### 1. Launch EC2 Instance
+
+1. **AMI**: Search for "NVIDIA Isaac Sim" in AWS Marketplace
+   - Select the Ubuntu 24.04 based official NVIDIA AMI
+   - This comes with Isaac Sim pre-installed at `/opt/IsaacSim`
+
+2. **Instance Type**: `g5.2xlarge` or higher (RTX GPU required)
+
+3. **Storage**: 200GB+ recommended
+
+4. **Security Group**: Open the following ports
+   | Port | Protocol | Purpose |
+   |------|----------|---------|
+   | 22 | TCP | SSH |
+   | 49100 | TCP | Isaac Sim WebRTC Streaming |
+   | 8211 | TCP | Isaac Sim Livestream |
+   | 8899 | TCP | Isaac Sim Nucleus |
+
+### 2. Initial EC2 Setup
+
+SSH into your instance and run:
+
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Docker (if not installed)
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Install vcstool (for dependency management)
+pip install vcstool
+```
+
+### 3. Clone and Setup Project
+
+```bash
+cd /home/ubuntu
+git clone https://github.com/<your-org>/tiago-delivery.git
+cd tiago-delivery
+
+# Fetch external dependencies (tiago_isaac)
+./setup.sh
+```
+
+### 4. Build Docker Image
+
+```bash
+cd /home/ubuntu/tiago-delivery
+docker build -t tiago-delivery-ros2 -f docker/Dockerfile.ros2-humble .
+```
+
+### 5. Configure Shell Aliases
+
+Add aliases to your `.bashrc` for convenient usage:
+
+```bash
+echo "source /home/ubuntu/tiago-delivery/docker/aliases.sh" >> ~/.bashrc
+source ~/.bashrc
+```
+
+This provides the following commands:
+
+| Alias | Description |
+|-------|-------------|
+| `isaac-sim` | Launch Isaac Sim with streaming and TIAGo extension |
+| `tiago-ws` | Start ROS2 Docker container |
+| `tiago-ws-build` | Rebuild Docker image and start container |
+
+### 6. Build ROS2 Workspace
+
+```bash
+# Enter the container
+tiago-ws
+
+# Inside container: run setup and build
+cd /home/ros/tiago-delivery
+./setup.sh
+cd ros2_ws
+colcon build --symlink-install
+source install/setup.bash
+```
+
+## Running the System
+
+### Terminal 1: Launch Isaac Sim
+
+```bash
+# On EC2 host (not in Docker)
+isaac-sim
+```
+
+Access the streaming viewer at:
+```
+https://<your-ec2-public-ip>:49100/streaming/webrtc-client
+```
+
+Then in Isaac Sim:
+1. Open `File → Open`
+2. Navigate to `/home/ubuntu/tiago-delivery/external/tiago_isaac/`
+3. Load `tiago_dual_functional_light.usd`
+4. Press `Play` to start simulation
+
+### Terminal 2: Launch ROS2 Nodes
+
+```bash
+# Enter container
+tiago-ws
+
+# Inside container
+source /home/ros/tiago-delivery/ros2_ws/install/setup.bash
+
+# Test robot control
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5, y: 0.0, z: 0.0}, angular: {z: 0.0}}" --once
+```
+
+### Verify Communication
+
+```bash
+# In container - check available topics
+ros2 topic list
+
+# Expected topics from Isaac Sim:
+# /cmd_vel
+# /joint_command
+# /joint_states
+# /tf
+# /scan_front
+# /scan_rear
+# /gemini2/rgb
+# /gemini2/depth
+```
+
+## Installation (Local Development)
+
+If you're running locally instead of EC2, ensure you have:
+- Ubuntu 22.04
+- ROS2 Humble
+- NVIDIA Isaac Sim 5.0.0 installed
+- NVIDIA RTX GPU
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/C-2-Organization/tiago-delivery.git
+git clone https://github.com/<your-org>/tiago-delivery.git
 cd tiago-delivery
 ```
 
@@ -99,12 +243,10 @@ cd tiago-delivery
 The setup script will fetch external dependencies and configure symbolic links.
 
 ```bash
-chmod +x ./setup.sh
 ./setup.sh
 ```
 
 This will:
-
 - Clone `tiago_isaac` into `external/` directory
 - Create `ros2_ws/src/` structure
 - Set up symbolic links for TIAGo ROS2 packages
@@ -124,58 +266,42 @@ Add the TIAGo extension path to Isaac Sim:
 1. Open Isaac Sim
 2. Navigate to `Window → Extensions`
 3. Add extension search path:
-
    ```
    <project_root>/external/tiago_isaac/exts/
    ```
-
 4. Enable `omni.tiago_omnidirectional` extension
 
-## Usage
+## Troubleshooting
 
-### Launch Simulation
-
+### Isaac Sim extension not loading
+Ensure the extension path is correctly set:
 ```bash
-# Terminal 1: Set ROS domain ID
-export ROS_DOMAIN_ID=110 # 106 ~ 110 are available
+# Check if extension folder exists
+ls /home/ubuntu/tiago-delivery/external/tiago_isaac/exts/
 
-# Open Isaac Sim and load the scene
-# File: external/tiago_isaac/tiago_dual_functional_light.usd
+# Manually add in Isaac Sim:
+# Window → Extensions → Gear icon → Add search path
 ```
 
-### Run Navigation Stack
-
+### ROS2 topics not visible
 ```bash
-# Terminal 2
-export ROS_DOMAIN_ID=110
-source ros2_ws/install/setup.bash
-ros2 launch navigation nav_launch.py
+# Verify ROS_DOMAIN_ID matches
+echo $ROS_DOMAIN_ID  # Should be 110
+
+# Check RMW implementation
+echo $RMW_IMPLEMENTATION  # Should be rmw_cyclonedds_cpp
 ```
 
-### Run Perception
-
-```bash
-# Terminal 3
-export ROS_DOMAIN_ID=110
-source ros2_ws/install/setup.bash
-ros2 launch perception perception_launch.py
-```
-
-### Run Full System
-
-```bash
-# Terminal 4
-export ROS_DOMAIN_ID=110
-source ros2_ws/install/setup.bash
-ros2 launch orchestrator full_system_launch.py
-```
+### Robot not moving with /cmd_vel
+1. Ensure Isaac Sim simulation is playing (not paused)
+2. Verify `omni.tiago_omnidirectional` extension is enabled
+3. Check the action graph is loaded in USD file
 
 ## Robot Platform
 
 This project uses the **TIAGo++** robot simulation from [AIS-Bonn/tiago_isaac](https://github.com/AIS-Bonn/tiago_isaac).
 
 **Key features:**
-
 - Dual-arm mobile manipulator
 - Mecanum wheel omnidirectional base
 - RGB-D camera (Gemini2)

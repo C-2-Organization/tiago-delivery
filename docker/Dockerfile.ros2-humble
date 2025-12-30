@@ -1,0 +1,22 @@
+FROM osrf/ros:humble-desktop
+
+# Install dependencies
+RUN apt update && apt install -y \
+    ros-humble-rmw-cyclonedds-cpp \
+    ros-humble-nav2-bringup \
+    ros-humble-navigation2 \
+    ros-humble-moveit \
+    python3-vcstool \
+    python3-colcon-common-extensions \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+ENV ROS_DOMAIN_ID=110
+
+# Create workspace
+RUN mkdir -p /home/ros/tiago-delivery/ros2_ws/src
+WORKDIR /home/ros/tiago-delivery
+
+# Source ROS2 on bash startup
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+RUN echo "if [ -f /home/ros/tiago-delivery/ros2_ws/install/setup.bash ]; then source /home/ros/tiago-delivery/ros2_ws/install/setup.bash; fi" >> ~/.bashrc
