@@ -1,0 +1,13 @@
+# Goal
+interfaces/BoxPose3D pick_pose
+geometry_msgs/PoseStamped place_pose
+bool use_gripper
+int32 max_retries
+---
+# Result
+bool success
+string message
+---
+# Feedback
+string stage
+float32 progress
