@@ -24,6 +24,7 @@ setup(
         'console_scripts': [
             'qr_checker = tiago_box_check.nodes.qr_checker:main',
             'yolo_box_detector = tiago_box_check.nodes.yolo_box_detector_node:main',
+            'yolo_overlay = tiago_box_check.nodes.yolo_overlay_node:main',
         ],
     },
 )
