@@ -56,7 +56,7 @@ This approach reduces driver workload, enhances building security, and eliminate
 ## Repository Structure
 
 ```
-last-100m-delivery-robot/
+tiago-delivery/
 ├── README.md
 ├── dependencies.repos          # External dependencies (vcs)
 ├── setup.sh                    # Initial setup script
@@ -81,7 +81,7 @@ last-100m-delivery-robot/
 
 - Ubuntu 22.04
 - ROS2 Humble
-- NVIDIA Isaac Sim 4.2.0
+- NVIDIA Isaac Sim 5.0.0
 - NVIDIA RTX GPU (for Isaac Sim)
 - Python 3.10
 
@@ -90,8 +90,8 @@ last-100m-delivery-robot/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<your-org>/last-100m-delivery-robot.git
-cd last-100m-delivery-robot
+git clone https://github.com/C-2-Organization/tiago-delivery.git
+cd tiago-delivery
 ```
 
 ### 2. Run Setup Script
@@ -99,6 +99,7 @@ cd last-100m-delivery-robot
 The setup script will fetch external dependencies and configure symbolic links.
 
 ```bash
+chmod +x ./setup.sh
 ./setup.sh
 ```
 
@@ -136,7 +137,7 @@ Add the TIAGo extension path to Isaac Sim:
 
 ```bash
 # Terminal 1: Set ROS domain ID
-export ROS_DOMAIN_ID=68
+export ROS_DOMAIN_ID=110 # 106 ~ 110 are available
 
 # Open Isaac Sim and load the scene
 # File: external/tiago_isaac/tiago_dual_functional_light.usd
@@ -146,7 +147,7 @@ export ROS_DOMAIN_ID=68
 
 ```bash
 # Terminal 2
-export ROS_DOMAIN_ID=68
+export ROS_DOMAIN_ID=110
 source ros2_ws/install/setup.bash
 ros2 launch navigation nav_launch.py
 ```
@@ -155,7 +156,7 @@ ros2 launch navigation nav_launch.py
 
 ```bash
 # Terminal 3
-export ROS_DOMAIN_ID=68
+export ROS_DOMAIN_ID=110
 source ros2_ws/install/setup.bash
 ros2 launch perception perception_launch.py
 ```
@@ -164,7 +165,7 @@ ros2 launch perception perception_launch.py
 
 ```bash
 # Terminal 4
-export ROS_DOMAIN_ID=68
+export ROS_DOMAIN_ID=110
 source ros2_ws/install/setup.bash
 ros2 launch orchestrator full_system_launch.py
 ```

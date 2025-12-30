@@ -62,14 +62,13 @@ env/
 *.ipynb_checkpoints
 
 # ====================
-# ROS2
+# ROS2 Workspace
 # ====================
-install/
-log/
-build/
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
 *.pyc
 *.pyo
-.colcon/
 
 # ROS bag files
 *.bag
@@ -78,9 +77,16 @@ build/
 *.db3-wal
 
 # ====================
+# External Dependencies (vcs import)
+# ====================
+external/
+
+# Symbolic links to external packages
+ros2_ws/src/tiago_rviz2
+
+# ====================
 # Isaac Sim
 # ====================
-# Cache and temp files
 .isaac_sim/
 _isaac_sim/
 *.cache
@@ -89,14 +95,11 @@ _isaac_sim/
 # Generated USD files (keep source, ignore compiled)
 *.usdc
 *.usdz
-!src/simulation/worlds/*.usd
-!src/simulation/robots/*.usd
 
 # Nucleus local cache
 .nvidia-omniverse/
 
 # Isaac Sim logs
-*.log
 kit/logs/
 
 # ====================
@@ -116,7 +119,6 @@ kit/logs/
 *.h5
 *.pb
 *.weights
-!src/perception/models/.gitkeep
 
 # Training artifacts
 runs/
@@ -153,7 +155,6 @@ compile_commands.json
 logs/
 tmp/
 temp/
-*.tmp
 *.bak
 *.backup
 
@@ -173,7 +174,6 @@ credentials/
 # ====================
 docs/_build/
 docs/site/
-*.pdf
 
 # ====================
 # Misc
@@ -188,8 +188,3 @@ docs/site/
 *.ply
 *.las
 *.laz
-!src/navigation/config/maps/*.yaml
-!src/navigation/config/maps/*.pgm
-
-# External dependencies
-ros2_ws/src/tiago_isaac/
