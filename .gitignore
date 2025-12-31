@@ -126,6 +126,7 @@ wandb/
 mlruns/
 lightning_logs/
 checkpoints/
+runs_tiago_box/
 
 # Dataset (should be downloaded separately)
 data/
