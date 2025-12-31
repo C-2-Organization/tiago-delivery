@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'yolo_box_detector = receiver_detection.yolo_box_detector_node:main',
+            'qr_reader = receiver_detection.qr_reader_node:main',
         ],
     },
 )
