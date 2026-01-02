@@ -6,5 +6,3 @@ int32 x1
 int32 y1
 int32 x2
 int32 y2
-string ocr_text
-float32 ocr_confidence
