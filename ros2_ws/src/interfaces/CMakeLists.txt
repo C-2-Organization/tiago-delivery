@@ -13,6 +13,7 @@ find_package(geometry_msgs REQUIRED)
 
 # --- Interface generation (msg/srv/action) ---
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/ApproachBox.action"
   "msg/BoxDetection2D.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
