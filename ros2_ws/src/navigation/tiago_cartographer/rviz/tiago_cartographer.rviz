@@ -26,7 +26,7 @@ Visualization Manager:
   Displays:
     - Alpha: 1
       Class: rviz_default_plugins/LaserScan
-      Color: 255; 0; 0                # 전방 레이저는 빨간색
+      Color: 255; 0; 0                      # 전방 레이저는 빨간색
       Color Transformer: Intensity
       Enabled: true
       Name: LaserScan (Front)
@@ -40,7 +40,7 @@ Visualization Manager:
       Use Fixed Frame: true
     - Alpha: 1
       Class: rviz_default_plugins/LaserScan
-      Color: 0; 255; 0                # 후방 레이저 토픽, 초록색
+      Color: 0; 255; 0                      # 후방 레이저는 초록색
       Color Transformer: Intensity
       Enabled: true
       Name: LaserScan (Rear)
@@ -50,7 +50,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /scan_rear_raw
+        Value: /scan_rear_raw               # 후방 레이저 토픽
       Use Fixed Frame: true
       Value: true
     - Alpha: 1

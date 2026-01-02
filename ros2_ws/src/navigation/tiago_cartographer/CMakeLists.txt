@@ -29,8 +29,3 @@ install(
   DIRECTORY config launch rviz
   DESTINATION share/${PROJECT_NAME}
 )
-
-install(
-  PROGRAMS lidar_fixer.py
-  DESTINATION lib/${PROJECT_NAME}
-)
