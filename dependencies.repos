@@ -39,8 +39,8 @@ repositories:
 
   external/tiago_robot:
     type: git
-    url: https://github.com/pal-robotics/tiago_dual_robot
-    version: humble-devel
+    url: https://github.com/C-2-Organization/tiago_dual_robot.git
+    version: isaac-compatibility
   external/tiago_navigation:
     type: git
     url: https://github.com/pal-robotics/tiago_navigation.git
