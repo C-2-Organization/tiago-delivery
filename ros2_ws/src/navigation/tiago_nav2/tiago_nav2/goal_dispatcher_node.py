@@ -40,13 +40,12 @@ class GoalDispatcherNode(Node):
         self.client = ActionClient(self, NavigateToPose, self.action_name)
 
         self.last_dest = None
-
         self.sub = self.create_subscription(String, self.destination_topic, self._on_dest, 10)
 
         self.get_logger().info(f"Subscribed: {self.destination_topic}")
         self.get_logger().info(f"Goals yaml: {self.goals_yaml}")
         self.get_logger().info(f"Action: {self.action_name}")
-        self.get_logger().info(f"Rooms: {list(self.goals.keys())}")
+        self.get_logger().info(f"Goals: {list(self.goals.keys())}")
 
     def _load_goals(self):
         if not self.goals_yaml or not os.path.exists(self.goals_yaml):
@@ -57,8 +56,14 @@ class GoalDispatcherNode(Node):
         with open(self.goals_yaml, "r") as f:
             data = yaml.safe_load(f) or {}
 
-        rooms = data.get("rooms", {})
-        self.goals = rooms if isinstance(rooms, dict) else {}
+        # ✅ 여기 핵심: rooms가 아니라 goals
+        goals = data.get("goals", {})
+        if not isinstance(goals, dict):
+            self.get_logger().warn("Invalid goals.yaml: expected top-level 'goals' dict")
+            self.goals = {}
+            return
+
+        self.goals = goals
 
     def _on_dest(self, msg: String):
         dest = (msg.data or "").strip()
@@ -105,7 +110,10 @@ class GoalDispatcherNode(Node):
         goal = NavigateToPose.Goal()
         goal.pose = pose
 
-        self.get_logger().info(f"Send goal room {dest} -> x={pose.pose.position.x:.3f}, y={pose.pose.position.y:.3f}")
+        self.get_logger().info(
+            f"Send goal {dest} -> {pose.header.frame_id} "
+            f"x={pose.pose.position.x:.3f}, y={pose.pose.position.y:.3f}"
+        )
 
         future = self.client.send_goal_async(goal)
         future.add_done_callback(self._on_goal_response)

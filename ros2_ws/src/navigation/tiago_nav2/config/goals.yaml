@@ -1,5 +1,5 @@
-rooms:
-  "101": {frame_id: "map", x: 2.0, y: 5.0, yaw: 0.0}
-  "102": {frame_id: "map", x: 4.5, y: 5.0, yaw: 0.0}
-  "103": {frame_id: "map", x: 7.0, y: 5.0, yaw: 0.0}
-  "104": {frame_id: "map", x: 9.5, y: 5.0, yaw: 0.0}
+goals:
+  "101": {frame_id: "map", x: 3.0018513, y: -0.2668018, yaw: 0.0}
+  "102": {frame_id: "map", x: 2.8262234, y: -0.0175200, yaw: 0.0}
+  "103": {frame_id: "map", x: -5.2121558, y: -10.4302711, yaw: 0.0}
+  "104": {frame_id: "map", x: 4.8993549, y: -7.7269144, yaw: 0.0}
