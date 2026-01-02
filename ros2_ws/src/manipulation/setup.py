@@ -1,8 +1,6 @@
 from setuptools import find_packages, setup
-from glob import glob
-import os
 
-package_name = 'receiver_detection'
+package_name = 'manipulation'
 
 setup(
     name=package_name,
@@ -12,7 +10,6 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -27,9 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'yolo_box_detector = receiver_detection.yolo_box_detector_node:main',
-            'qr_reader = receiver_detection.qr_reader_node:main',
-            'box_3d_from_depth = receiver_detection.box_3d_from_depth_node:main',
+            'approach_box = manipulation.approach_box:main',
         ],
     },
 )
