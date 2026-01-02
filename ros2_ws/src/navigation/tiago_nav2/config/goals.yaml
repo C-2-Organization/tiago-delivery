@@ -1,0 +1,5 @@
+rooms:
+  "101": {frame_id: "map", x: 2.0, y: 5.0, yaw: 0.0}
+  "102": {frame_id: "map", x: 4.5, y: 5.0, yaw: 0.0}
+  "103": {frame_id: "map", x: 7.0, y: 5.0, yaw: 0.0}
+  "104": {frame_id: "map", x: 9.5, y: 5.0, yaw: 0.0}
