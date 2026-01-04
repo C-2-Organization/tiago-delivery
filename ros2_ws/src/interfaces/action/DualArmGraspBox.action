@@ -1,0 +1,26 @@
+# Goal
+geometry_msgs/PoseStamped box_pose          # 3D box reference pose (prefer base_link)
+float32 pregrasp_outward_m                 # how far each hand stays outward in pregrasp (y direction)
+float32 side_margin_m                      # keep away from box edge (meters)
+float32 support_z_offset_m                 # move hands to box underside (negative means lower than box_pose.z)
+float32 lift_distance_m                    # lift after grasp (meters)
+float32 timeout_sec
+
+# Optional width estimation help
+# If <= 0, we estimate from 2D bbox + depth + fx
+float32 box_width_m
+
+---
+# Result
+bool success
+string message
+geometry_msgs/PoseStamped left_final_pose
+geometry_msgs/PoseStamped right_final_pose
+
+---
+# Feedback
+string state
+float32 progress
+float32 estimated_box_width_m
+geometry_msgs/PoseStamped left_target_pose
+geometry_msgs/PoseStamped right_target_pose

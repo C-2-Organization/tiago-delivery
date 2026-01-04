@@ -1,0 +1,20 @@
+# Goal
+geometry_msgs/PoseStamped box_pose     # box center pose (any frame ok)
+string arm                             # "right" | "left"
+float32 pregrasp_distance              # meters (back off along box_pose X-)
+float32 lift_distance                  # meters (lift upward in planning frame)
+float32 timeout_sec                    # seconds
+
+# optional: override grasp orientation (if set all zeros -> keep box_pose orientation)
+geometry_msgs/Quaternion grasp_orientation
+
+---
+# Result
+bool success
+string message
+geometry_msgs/PoseStamped final_ee_pose
+
+---
+# Feedback
+string state
+float32 progress

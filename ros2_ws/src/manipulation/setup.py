@@ -25,6 +25,9 @@ setup(
     entry_points={
         'console_scripts': [
             'approach_box = manipulation.approach_box:main',
+            "dual_arm_grasp_box = manipulation.dual_arm_grasp_box:main",
+            'grasp_box = manipulation.grasp_box:main',
+            'lift_box = manipulation.lift_box:main',
         ],
     },
 )
