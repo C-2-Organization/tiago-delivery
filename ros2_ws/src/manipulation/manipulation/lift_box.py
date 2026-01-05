@@ -149,7 +149,7 @@ class LiftBoxServer(Node):
         self.declare_parameter("default_init_move_time_sec", 3.0)
 
         # ApproachBox 파라미터
-        self.declare_parameter("approach_stop_distance", 0.20)
+        self.declare_parameter("approach_stop_distance", 0.11)
         self.declare_parameter("approach_timeout_sec", 100.0)
         self.declare_parameter("approach_min_confidence", 0.0)
         self.declare_parameter("approach_align_first", True)
