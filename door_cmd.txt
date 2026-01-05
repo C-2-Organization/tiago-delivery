@@ -1,0 +1,16 @@
+1st floor
+Entrance
+open: ros2 topic pub /joint_lobby_entrance_door sensor_msgs/msg/JointState "{name: ['ent_door_joint'], position: [-45.0]}" --once
+
+close: ros2 topic pub /joint_lobby_entrance_door sensor_msgs/msg/JointState "{name: ['ent_door_joint'], position: [45.0]}" --once
+
+Elevator
+open: ros2 topic pub /joint_lobby_elevator_door sensor_msgs/msg/JointState "{name: ['elv_door_L_joint', 'elv_door_R_joint'], position: [45.0, -45.0]}" --once
+
+close: ros2 topic pub /joint_lobby_elevator_door sensor_msgs/msg/JointState "{name: ['elv_door_L_joint', 'elv_door_R_joint'], position: [-45.0, 45.0]}" --once
+
+
+2nd floor
+open: ros2 topic pub /joint_second_elevator_door sensor_msgs/msg/JointState "{name: ['door_L_joint', 'door_R_joint'], position: [45.0, -45.0]}" --once
+
+close: ros2 topic pub /joint_second_elevator_door sensor_msgs/msg/JointState "{name: ['door_L_joint', 'door_R_joint'], position: [-45.0, 45.0]}" --once

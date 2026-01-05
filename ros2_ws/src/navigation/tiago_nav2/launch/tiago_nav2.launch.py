@@ -9,6 +9,9 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    # -----------------------------
+    # Launch configurations
+    # -----------------------------
     use_sim_time = LaunchConfiguration('use_sim_time')
     params_file = LaunchConfiguration('params_file')
     map_yaml = LaunchConfiguration('map')
@@ -16,9 +19,13 @@ def generate_launch_description():
     destination_topic = LaunchConfiguration('destination_topic')
 
     nav2_bringup_dir = get_package_share_directory('nav2_bringup')
+    tiago_nav2_share = get_package_share_directory('tiago_nav2')
 
     return LaunchDescription([
 
+        # =============================
+        # Launch Arguments
+        # =============================
         DeclareLaunchArgument(
             'use_sim_time',
             default_value='true'
@@ -26,9 +33,8 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             'params_file',
-            # ✅ 반드시 "최소" Nav2 params
             default_value=os.path.join(
-                get_package_share_directory('tiago_nav2'),
+                tiago_nav2_share,
                 'config',
                 'nav2_params.yaml'
             )
@@ -36,13 +42,13 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             'map',
-                default_value='/home/rokey/tiago_maps/tiago_map_current.yaml'
+            default_value='/home/rokey/tiago_maps/tiago_map_current.yaml'
         ),
 
         DeclareLaunchArgument(
             'goals_yaml',
             default_value=os.path.join(
-                get_package_share_directory('tiago_nav2'),
+                tiago_nav2_share,
                 'config',
                 'goals.yaml'
             )
@@ -54,11 +60,16 @@ def generate_launch_description():
         ),
 
         # =============================
-        # Nav2 Navigation (정석)
+        # 1) Nav2 Navigation
+        # (AMCL + Planner + Controller)
         # =============================
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(nav2_bringup_dir, 'launch', 'navigation_launch.py')
+                os.path.join(
+                    nav2_bringup_dir,
+                    'launch',
+                    'navigation_launch.py'
+                )
             ),
             launch_arguments={
                 'use_sim_time': use_sim_time,
@@ -68,7 +79,7 @@ def generate_launch_description():
         ),
 
         # =============================
-        # Goal Dispatcher
+        # 2) Goal Dispatcher
         # =============================
         Node(
             package='tiago_nav2',
