@@ -102,7 +102,7 @@ class QRReaderNode(Node):
         self.get_logger().info("✅ QR Reader node initialized (easyocr removed).")
 
         # room id regex
-        self.room_re = re.compile(r"(\d{3})\s*호?")
+        self.room_re = re.compile(r"(\d{4})\s*호?")
 
     def _on_param_change(self, params):
         """Handle live parameter updates via ros2 param set."""
