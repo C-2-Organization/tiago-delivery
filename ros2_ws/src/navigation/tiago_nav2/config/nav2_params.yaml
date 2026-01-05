@@ -1,5 +1,5 @@
 # ============================
-# Nav2 Params (Isaac Sim 5.0 / TIAGo) - FINAL (base_footprint)
+# Nav2 Params
 # ============================
 
 amcl:
@@ -10,8 +10,8 @@ amcl:
     global_frame_id: "map"
     tf_broadcast: true
     scan_topic: "/scan_front_raw"
-    min_particles: 500
-    max_particles: 2000
+    min_particles: 800
+    max_particles: 3000
     use_map_topic: true
 
 map_server:
@@ -32,7 +32,7 @@ bt_navigator:
 controller_server:
   ros__parameters:
     use_sim_time: true
-    controller_frequency: 10.0
+    controller_frequency: 15.0
     min_x_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.001
 
@@ -43,34 +43,47 @@ controller_server:
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
       required_movement_radius: 0.3
-      movement_time_allowance: 8.0
+      movement_time_allowance: 10.0
 
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25
+      xy_goal_tolerance: 0.2
       yaw_goal_tolerance: 0.25
       stateful: true
 
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      desired_linear_vel: 0.15
-      lookahead_dist: 0.3
-      transform_tolerance: 0.5
+
+      # --- 대형 로봇 안정형 ---
+      desired_linear_vel: 0.4
+      lookahead_dist: 0.75
+      min_lookahead_dist: 0.55
+      max_lookahead_dist: 1.30
+      lookahead_time: 1.8
+
+      transform_tolerance: 0.2
+
       use_rotate_to_heading: true
       rotate_to_heading_angular_vel: 0.6
-      rotate_to_heading_min_angle: 0.4
+      rotate_to_heading_min_angle: 0.5
+
       allow_reversing: false
+
       use_velocity_scaled_lookahead_dist: true
-      min_lookahead_dist: 0.2
-      max_lookahead_dist: 0.6
-      lookahead_time: 1.0
+
+      # cost 기반 속도 스케일링(벽 가까이 가면 느려짐)
       use_cost_regulated_linear_velocity_scaling: true
-      cost_scaling_dist: 0.6
+      cost_scaling_dist: 0.9
       cost_scaling_gain: 1.0
       min_approach_linear_velocity: 0.05
+
+      # 곡률 기반 속도 스케일링(급회전 시 느려짐)
       use_curvature_regulated_linear_velocity_scaling: true
-      curvature_scaling_dist: 0.9
+      curvature_scaling_dist: 1.2
       curvature_scaling_gain: 1.0
+
+      # 충돌 여유 시간(보수적으로)
+      max_allowed_time_to_collision_at_slowdown_speed: 2.0
 
 planner_server:
   ros__parameters:
@@ -78,9 +91,12 @@ planner_server:
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
-      tolerance: 0.5
+      tolerance: 0.2
       allow_unknown: true
 
+# ----------------------------
+# Global Costmap
+# ----------------------------
 global_costmap:
   global_costmap:
     ros__parameters:
@@ -91,8 +107,14 @@ global_costmap:
       publish_frequency: 1.0
       resolution: 0.05
       track_unknown_space: true
+
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
-      robot_radius: 0.3
+
+      # ✅ robot_radius 대신 footprint 사용 (예시)
+      robot_radius: 0.0
+      footprint: "[[0.45, 0.35], [0.45, -0.35], [-0.45, -0.35], [-0.45, 0.35]]"
+      footprint_padding: 0.05
+
       transform_tolerance: 0.5
       always_send_full_costmap: true
 
@@ -109,19 +131,25 @@ global_costmap:
           data_type: "LaserScan"
           marking: true
           clearing: true
+
+          # ✅ 대형 로봇: 자기 몸체/근접 노이즈 억제 강화
+          obstacle_min_range: 0.45
           obstacle_max_range: 6.0
           raytrace_max_range: 8.0
           qos:
             reliability: "best_effort"
-            durability: "volatile"
-            history: "keep_last"
-            depth: 5
 
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.3
-        cost_scaling_factor: 2.0
 
+        # ✅ 글로벌 경로는 벽에서 더 멀리
+        inflation_radius: 0.9
+        # ✅ 비용 완만하게 떨어지게(벽 가까이 더 "비싸게" 유지)
+        cost_scaling_factor: 3.0
+
+# ----------------------------
+# Local Costmap
+# ----------------------------
 local_costmap:
   local_costmap:
     ros__parameters:
@@ -129,15 +157,17 @@ local_costmap:
       global_frame: "odom"
       robot_base_frame: "base_footprint"
       rolling_window: true
-
       resolution: 0.05
-
-      update_frequency: 10.0
-      publish_frequency: 5.0
-
+      update_frequency: 12.0
+      publish_frequency: 6.0
       transform_tolerance: 0.5
-      always_send_full_costmap: true
+
       plugins: ["obstacle_layer", "inflation_layer"]
+
+      # ✅ robot_radius 대신 footprint 사용 (예시)
+      robot_radius: 0.0
+      footprint: "[[0.45, 0.35], [0.45, -0.35], [-0.45, -0.35], [-0.45, 0.35]]"
+      footprint_padding: 0.05
 
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -146,21 +176,22 @@ local_costmap:
         scan:
           topic: "/scan_front_raw"
           data_type: "LaserScan"
-          max_obstacle_height: 2.0
           marking: true
           clearing: true
-          obstacle_max_range: 6.0
-          raytrace_max_range: 8.0
+
+          # ✅ 로컬은 더 보수적으로 노이즈 컷 + 현실적인 거리
+          obstacle_min_range: 0.45
+          obstacle_max_range: 4.5
+          raytrace_max_range: 6.0
           qos:
             reliability: "best_effort"
-            durability: "volatile"
-            history: "keep_last"
-            depth: 5
 
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.1
-        cost_scaling_factor: 3.0
+
+        # ✅ 로컬도 벽 근처 싫어하게
+        inflation_radius: 0.6
+        cost_scaling_factor: 3.5
 
 lifecycle_manager_localization:
   ros__parameters:
@@ -172,4 +203,5 @@ lifecycle_manager_navigation:
   ros__parameters:
     use_sim_time: true
     autostart: true
-    node_names: ["planner_server", "controller_server", "bt_navigator", "local_costmap", "global_costmap"]
+    node_names:
+      ["planner_server", "controller_server", "bt_navigator", "local_costmap", "global_costmap"]

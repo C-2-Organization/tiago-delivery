@@ -1,6 +1,7 @@
 import qrcode
 
-text = "104호"   # QR에 넣을 텍스트(데이터)
-img = qrcode.make(text)
-img.save("qr_104.png")
-print("saved: qr_104.png")
+for i in range(1301, 1309):
+    text = f"{i}호"
+    img = qrcode.make(text)
+    img.save(f"qr_{i}.png")
+    print(f"saved: qr_{i}.png")

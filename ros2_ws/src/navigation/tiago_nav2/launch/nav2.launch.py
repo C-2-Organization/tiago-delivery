@@ -78,6 +78,21 @@ def generate_launch_description():
             "params_file": params_file,
         }.items(),
     )
+    
+    room_goals = os.path.join(tiago_nav2_dir, "config", "room_goals.yaml")
+
+    room_nav_node = Node(
+        package="tiago_nav2",
+        executable="room_navigator",
+        name="room_navigator",
+        output="screen",
+        parameters=[{
+            "use_sim_time": True,
+            "goals_file": room_goals,
+            "nav2_action_name": "/navigate_to_pose",
+            "default_frame_id": "map",
+        }],
+    )
 
     return LaunchDescription(
         [
@@ -94,8 +109,8 @@ def generate_launch_description():
                 "initial_pose_file",
                 default_value=os.path.join(tiago_nav2_dir, "config", "initial_pose.yaml"),
             ),
-            DeclareLaunchArgument("initpose_delay_sec", default_value="10.0"),
-            DeclareLaunchArgument("nav_delay_sec", default_value="30.0"),
+            DeclareLaunchArgument("initpose_delay_sec", default_value="7.0"),
+            DeclareLaunchArgument("nav_delay_sec", default_value="10.0"),
             localization,
             TimerAction(
                 period=initpose_delay,
@@ -103,7 +118,7 @@ def generate_launch_description():
             ),
             TimerAction(
                 period=nav_delay,
-                actions=[navigation],
+                actions=[navigation, room_nav_node],
             ),
         ]
     )
