@@ -9,6 +9,14 @@ RUN apt update && apt install -y \
     ros-humble-nav2-bringup \
     ros-humble-navigation2 \
     ros-humble-moveit \
+    ros-humble-moveit-ros-planning-interface \
+    ros-humble-ros2-control \
+    ros-humble-ros2-controllers \
+    ros-humble-controller-manager \
+    ros-humble-joint-state-broadcaster \
+    ros-humble-joint-trajectory-controller \
+    ros-humble-moveit-ros-control-interface \
+    ros-humble-image-pipeline \
     python3-vcstool \
     python3-colcon-common-extensions \
     && rm -rf /var/lib/apt/lists/*

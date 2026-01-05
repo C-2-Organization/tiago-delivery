@@ -9,6 +9,8 @@ from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.duration import Duration
 
 from geometry_msgs.msg import Twist, PointStamped
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from builtin_interfaces.msg import Duration as DurationMsg
 
 # interfaces 패키지 액션
 from interfaces.action import ApproachBox
@@ -31,6 +33,7 @@ class ApproachBoxActionServer(Node):
     Action: /approach_box
     Sub:   /perception/box_point_cam (PointStamped)
     Pub:   /cmd_vel (Twist)
+    Pub:   /head_controller/joint_trajectory (JointTrajectory)
     """
 
     def __init__(self):
@@ -41,9 +44,18 @@ class ApproachBoxActionServer(Node):
             PointStamped, "/perception/box_point_cam", self.on_point, 10
         )
 
+        # Head controller publisher
+        self._head_traj_pub = self.create_publisher(
+            JointTrajectory, "/head_controller/joint_trajectory", 10
+        )
+
         # latest target
         self.last_point: Optional[PointStamped] = None
         self.last_point_stamp = None  # node time
+
+        # current head tilt (to avoid redundant commands)
+        self._current_head_tilt: float = 0.0
+        self._last_head_cmd_time = None
 
         # Action server
         self._action_server = ActionServer(
@@ -56,8 +68,8 @@ class ApproachBoxActionServer(Node):
         )
 
         # control params (default; can tune)
-        self.declare_parameter("kp_ang", 1.8)        # omega = -kp_ang * x
-        self.declare_parameter("kp_lin", 0.6)        # v = kp_lin * (z - stop)
+        self.declare_parameter("kp_ang", 1.8)  # omega = -kp_ang * x
+        self.declare_parameter("kp_lin", 0.6)  # v = kp_lin * (z - stop)
         self.declare_parameter("max_linear", 0.35)
         self.declare_parameter("max_angular", 0.9)
 
@@ -69,14 +81,28 @@ class ApproachBoxActionServer(Node):
 
         # measurement staleness
         self.declare_parameter("measurement_timeout", 0.5)  # sec
-        
-        self.declare_parameter("bearing_deadband", 0.05)   # rad (~2.9 deg)
+
+        self.declare_parameter("bearing_deadband", 0.05)  # rad (~2.9 deg)
         self.declare_parameter("center_for_forward_bearing", 0.12)  # rad (~6.9 deg)
 
         self.declare_parameter("max_align_angular", 0.45)  # rad/s (align 중엔 더 느리게)
-        self.declare_parameter("v_align", 0.06)            # m/s (align 중에도 아주 천천히 전진)
+        self.declare_parameter("v_align", 0.06)  # m/s (align 중에도 아주 천천히 전진)
 
-        self.get_logger().info("ApproachBoxActionServer started.")
+        # Head tilt parameters
+        # head_2_joint: 양수 = 아래로 숙임, 음수 = 위로 듦
+        # 일반적 범위: 약 -0.5 ~ 1.0 rad
+        self.declare_parameter("head_tilt_kp", 0.5)  # P gain for head tilt
+        self.declare_parameter("head_tilt_min", -0.3)  # rad (max up, 위로 ~17°)
+        self.declare_parameter("head_tilt_max", 0.9)  # rad (max down, 아래로 ~52°)
+        self.declare_parameter("head_tilt_deadband", 0.02)  # rad, 이 이하면 명령 안 보냄
+        self.declare_parameter("head_cmd_interval", 0.2)  # sec, 헤드 명령 최소 간격
+        self.declare_parameter("head_traj_duration", 0.3)  # sec, trajectory duration
+
+        # 카메라 기준 y 좌표 목표 (화면 중앙 = 0, 위 = 음수, 아래 = 양수)
+        # 박스를 화면 중앙보다 살짝 위에 두고 싶으면 음수로 설정
+        self.declare_parameter("target_y_cam", 0.0)
+
+        self.get_logger().info("ApproachBoxActionServer started (with head tilt control).")
 
     def destroy_node(self):
         # ensure robot stops
@@ -89,6 +115,57 @@ class ApproachBoxActionServer(Node):
     def on_point(self, msg: PointStamped):
         self.last_point = msg
         self.last_point_stamp = self.get_clock().now()
+
+    def _publish_head_tilt(self, tilt_rad: float):
+        """head_2_joint에 tilt 명령을 보냄."""
+        traj = JointTrajectory()
+        traj.joint_names = ["head_2_joint"]
+
+        pt = JointTrajectoryPoint()
+        pt.positions = [float(tilt_rad)]
+        pt.velocities = [0.0]
+
+        duration_sec = float(self.get_parameter("head_traj_duration").value)
+        pt.time_from_start = DurationMsg(
+            sec=int(duration_sec), nanosec=int((duration_sec % 1) * 1e9)
+        )
+
+        traj.points = [pt]
+        self._head_traj_pub.publish(traj)
+
+        self._current_head_tilt = tilt_rad
+        self._last_head_cmd_time = self.get_clock().now()
+
+    def _update_head_tilt(self, y_cam: float):
+        target_y = float(self.get_parameter("target_y_cam").value)
+        kp = float(self.get_parameter("head_tilt_kp").value)
+        tilt_min = float(self.get_parameter("head_tilt_min").value)
+        tilt_max = float(self.get_parameter("head_tilt_max").value)
+        deadband = float(self.get_parameter("head_tilt_deadband").value)
+        cmd_interval = float(self.get_parameter("head_cmd_interval").value)
+
+        # y 오차: 양수면 박스가 목표보다 아래에 있음 → 고개를 숙여야 함
+        y_error = y_cam - target_y
+
+        # 헤드 틸트 계산: y_error가 양수면 헤드를 아래로 (음수 방향으로 감소)
+        desired_tilt = self._current_head_tilt - kp * y_error
+        desired_tilt = clamp(desired_tilt, tilt_min, tilt_max)
+
+        # deadband 체크 - 변화가 작으면 명령 안 보냄
+        tilt_change = abs(desired_tilt - self._current_head_tilt)
+        if tilt_change < deadband:
+            return
+
+        # 최소 간격 체크
+        if self._last_head_cmd_time is not None:
+            elapsed = (self.get_clock().now() - self._last_head_cmd_time).nanoseconds * 1e-9
+            if elapsed < cmd_interval:
+                return
+
+        self._publish_head_tilt(desired_tilt)
+        self.get_logger().debug(
+            f"Head tilt: y_cam={y_cam:.3f}, y_err={y_error:.3f}, tilt={desired_tilt:.3f} rad"
+        )
 
     # --- action callbacks ---
 
@@ -134,6 +211,11 @@ class ApproachBoxActionServer(Node):
         feedback = ApproachBox.Feedback()
         last_used_point = PointStamped()
 
+        # 헤드 초기화: 정면 바라보기
+        self._current_head_tilt = 0.0
+        self._last_head_cmd_time = None
+        self._publish_head_tilt(0.0)
+
         self.get_logger().info(
             f"[ApproachBox] start stop_distance={stop_distance:.2f} timeout={timeout_sec:.1f}s align_first={align_first}"
         )
@@ -177,6 +259,7 @@ class ApproachBoxActionServer(Node):
 
             # use measurement
             x = float(self.last_point.point.x)
+            y = float(self.last_point.point.y)  # 상하 위치 (헤드 틸트용)
             z = float(self.last_point.point.z)
             last_used_point = self.last_point
 
@@ -188,14 +271,20 @@ class ApproachBoxActionServer(Node):
                 rclpy.spin_once(self, timeout_sec=period)
                 continue
 
+            # ========== Head tilt control ==========
+            if math.isfinite(y):
+                self._update_head_tilt(y)
+
             bearing = math.atan2(x, z)
             ez = z - stop_distance
-            
+
             bearing_db = float(self.get_parameter("bearing_deadband").value)
-            center_for_forward_bearing = float(self.get_parameter("center_for_forward_bearing").value)
+            center_for_forward_bearing = float(
+                self.get_parameter("center_for_forward_bearing").value
+            )
             max_align_w = float(self.get_parameter("max_align_angular").value)
             v_align = float(self.get_parameter("v_align").value)
-            
+
             # arrived?
             if abs(bearing) < bearing_db and abs(ez) < z_db:
                 self.publish_stop()
