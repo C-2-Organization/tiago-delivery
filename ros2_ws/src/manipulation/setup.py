@@ -29,6 +29,7 @@ setup(
         'console_scripts': [
             'approach_box = manipulation.approach_box:main',
             'lift_box = manipulation.lift_box:main',
+            'drop_box = manipulation.drop_box:main',
         ],
     },
 )
