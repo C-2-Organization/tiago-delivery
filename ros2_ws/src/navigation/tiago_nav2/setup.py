@@ -28,6 +28,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'room_navigator = tiago_nav2.room_navigator_node:main',
         ],
     },
 )

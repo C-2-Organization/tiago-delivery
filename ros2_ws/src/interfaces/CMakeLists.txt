@@ -16,6 +16,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ApproachBox.action"
   "action/LiftBox.action"
   "action/DropBox.action"
+  "action/NavigateToRoom.action"
   "msg/BoxDetection2D.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
