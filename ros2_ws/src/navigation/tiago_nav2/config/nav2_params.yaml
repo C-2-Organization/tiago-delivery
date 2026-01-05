@@ -52,7 +52,7 @@ controller_server:
 
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      desired_linear_vel: 0.3  # 조금 더 속도를 높였습니다.
+      desired_linear_vel: 0.4  # 조금 더 속도를 높였습니다.
       lookahead_dist: 0.5      # [수정] 0.3에서 늘림 (로봇 반지름 0.3보다 커야 함)
       min_lookahead_dist: 0.3
       max_lookahead_dist: 0.9

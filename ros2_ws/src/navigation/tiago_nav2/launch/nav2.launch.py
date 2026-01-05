@@ -94,8 +94,8 @@ def generate_launch_description():
                 "initial_pose_file",
                 default_value=os.path.join(tiago_nav2_dir, "config", "initial_pose.yaml"),
             ),
-            DeclareLaunchArgument("initpose_delay_sec", default_value="10.0"),
-            DeclareLaunchArgument("nav_delay_sec", default_value="30.0"),
+            DeclareLaunchArgument("initpose_delay_sec", default_value="7.0"),
+            DeclareLaunchArgument("nav_delay_sec", default_value="10.0"),
             localization,
             TimerAction(
                 period=initpose_delay,
