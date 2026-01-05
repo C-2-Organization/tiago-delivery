@@ -68,7 +68,7 @@ class ApproachBoxActionServer(Node):
         )
 
         # control params (default; can tune)
-        self.declare_parameter("kp_ang", 1.8)  # omega = -kp_ang * x
+        self.declare_parameter("kp_ang", 0.8)  # omega = -kp_ang * x
         self.declare_parameter("kp_lin", 0.6)  # v = kp_lin * (z - stop)
         self.declare_parameter("max_linear", 0.35)
         self.declare_parameter("max_angular", 0.9)

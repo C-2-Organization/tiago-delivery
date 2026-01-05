@@ -37,6 +37,14 @@ def generate_launch_description():
         name="lift_box_server",
         output="screen",
     )
+    
+    # 4) drop_box (DropBoxServer)
+    drop_box_node = Node(
+        package="manipulation",
+        executable="drop_box",
+        name="drop_box_server",
+        output="screen",
+    )
 
     return LaunchDescription([
         bringup_control,
@@ -49,5 +57,10 @@ def generate_launch_description():
         TimerAction(
             period=6.0,
             actions=[lift_box_node],
+        ),
+
+        TimerAction(
+            period=7.0,
+            actions=[drop_box_node],
         ),
     ])
