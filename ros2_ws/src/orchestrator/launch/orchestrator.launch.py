@@ -30,7 +30,7 @@ def generate_launch_description():
             # DropBox
             {"drop_timeout_sec": 200.0},
             {"drop_stage_timeout_sec": 30.0},
-            {"drop_approach_distance_m": 0.3},
+            {"drop_approach_distance_m": 0.5},
             {"drop_backup_distance_m": 1.5},
             # Navigation
             {"navigate_timeout_sec": 300.0},

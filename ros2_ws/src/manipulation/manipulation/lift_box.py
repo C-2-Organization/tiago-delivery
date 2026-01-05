@@ -166,7 +166,7 @@ class LiftBoxServer(Node):
         # Left arm lift 파라미터
         self.declare_parameter("left_j2_pre_rotate_deg", 10.0)  # 회전 전 살짝 올리기
         self.declare_parameter("left_j2_lift_deg", -10.0)  # 최종 들어올리기
-        self.declare_parameter("left_j6_deg", 30.0)
+        self.declare_parameter("left_j6_deg", 80.0)
         self.declare_parameter("left_arm_move_time_sec", 2.0)
 
         # Arc backup (호 그리며 후진) 파라미터
