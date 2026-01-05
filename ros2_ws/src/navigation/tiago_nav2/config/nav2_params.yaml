@@ -55,7 +55,7 @@ controller_server:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
 
       # --- 대형 로봇 안정형 ---
-      desired_linear_vel: 0.25
+      desired_linear_vel: 0.4
       lookahead_dist: 0.75
       min_lookahead_dist: 0.55
       max_lookahead_dist: 1.30
@@ -143,9 +143,9 @@ global_costmap:
         plugin: "nav2_costmap_2d::InflationLayer"
 
         # ✅ 글로벌 경로는 벽에서 더 멀리
-        inflation_radius: 1.2
+        inflation_radius: 0.9
         # ✅ 비용 완만하게 떨어지게(벽 가까이 더 "비싸게" 유지)
-        cost_scaling_factor: 2.0
+        cost_scaling_factor: 3.0
 
 # ----------------------------
 # Local Costmap
@@ -190,8 +190,8 @@ local_costmap:
         plugin: "nav2_costmap_2d::InflationLayer"
 
         # ✅ 로컬도 벽 근처 싫어하게
-        inflation_radius: 0.9
-        cost_scaling_factor: 2.5
+        inflation_radius: 0.6
+        cost_scaling_factor: 3.5
 
 lifecycle_manager_localization:
   ros__parameters:

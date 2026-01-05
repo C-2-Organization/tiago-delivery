@@ -518,18 +518,18 @@ class DropBoxServer(Node):
         # 기본 자세: j1=90, j2=90, j3=0, j4=135, j5=0, j6=0, j7=0
         home_left_deg = {
             "arm_left_1_joint": 90.0,
-            "arm_left_2_joint": 90.0,
+            "arm_left_2_joint": 80.0,
             "arm_left_3_joint": 0.0,
-            "arm_left_4_joint": 135.0,
+            "arm_left_4_joint": 120.0,
             "arm_left_5_joint": 0.0,
             "arm_left_6_joint": 0.0,
             "arm_left_7_joint": 0.0,
         }
         home_right_deg = {
             "arm_right_1_joint": 90.0,
-            "arm_right_2_joint": 90.0,
+            "arm_right_2_joint": 80.0,
             "arm_right_3_joint": 0.0,
-            "arm_right_4_joint": 135.0,
+            "arm_right_4_joint": 120.0,
             "arm_right_5_joint": 0.0,
             "arm_right_6_joint": 0.0,
             "arm_right_7_joint": 0.0,
