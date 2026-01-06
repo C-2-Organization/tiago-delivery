@@ -138,7 +138,7 @@ class DropBoxServer(Node):
         self.declare_parameter("default_backup_distance_m", 0.5)
 
         # 이동 속도 (m/s)
-        self.declare_parameter("linear_speed", 0.1)
+        self.declare_parameter("linear_speed", 0.4)
 
         # 팔 동작 시간 (sec)
         self.declare_parameter("arm_move_time_sec", 2.0)
