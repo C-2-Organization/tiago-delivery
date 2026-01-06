@@ -12,7 +12,8 @@ from rclpy.duration import Duration
 from geometry_msgs.msg import PoseStamped, Quaternion
 from nav2_msgs.action import NavigateToPose
 
-from interfaces.action import NavigateToRoom  # ✅ interfaces 패키지 action
+from interfaces.action import NavigateToRoom
+
 
 def yaw_to_quat(yaw: float) -> Quaternion:
     q = Quaternion()
@@ -21,6 +22,7 @@ def yaw_to_quat(yaw: float) -> Quaternion:
     q.z = math.sin(yaw * 0.5)
     q.w = math.cos(yaw * 0.5)
     return q
+
 
 class RoomNavigator(Node):
     def __init__(self):
@@ -68,6 +70,18 @@ class RoomNavigator(Node):
     def cancel_cb(self, goal_handle) -> CancelResponse:
         return CancelResponse.ACCEPT
 
+    def _nav_feedback_cb(self, goal_handle):
+        """Nav2 피드백을 NavigateToRoom 피드백으로 변환"""
+        def cb(msg):
+            fb = NavigateToRoom.Feedback()
+            fb.state = "RUNNING"
+            try:
+                fb.distance_remaining = float(msg.feedback.distance_remaining)
+            except Exception:
+                fb.distance_remaining = -1.0
+            goal_handle.publish_feedback(fb)
+        return cb
+
     async def execute_cb(self, goal_handle):
         req = goal_handle.request
         room = req.room_id.strip()
@@ -89,10 +103,6 @@ class RoomNavigator(Node):
         pose.pose.position.y = float(pos.get("y", 0.0))
         pose.pose.position.z = float(pos.get("z", 0.0))
 
-        # orientation 우선순위:
-        # 1) use_orientation=true and YAML에 orientation 있으면 사용
-        # 2) yaw 있으면 yaw로 quaternion 생성
-        # 3) 없으면 identity
         if req.use_orientation and "orientation" in g:
             ori = g["orientation"]
             pose.pose.orientation.x = float(ori.get("x", 0.0))
@@ -119,7 +129,10 @@ class RoomNavigator(Node):
         nav_goal = NavigateToPose.Goal()
         nav_goal.pose = pose
 
-        send_future = self._nav2_client.send_goal_async(nav_goal, feedback_callback=self._nav_feedback_cb(goal_handle))
+        send_future = self._nav2_client.send_goal_async(
+            nav_goal, 
+            feedback_callback=self._nav_feedback_cb(goal_handle)
+        )
         nav_goal_handle = await send_future
 
         if not nav_goal_handle.accepted:
@@ -133,46 +146,28 @@ class RoomNavigator(Node):
         fb.state = "RUNNING"
         goal_handle.publish_feedback(fb)
 
-        # cancel 처리
-        while rclpy.ok() and not nav_goal_handle.status:
-            if goal_handle.is_cancel_requested:
-                await nav_goal_handle.cancel_goal_async()
-                goal_handle.canceled()
-                result = NavigateToRoom.Result()
-                result.success = False
-                result.message = "Canceled"
-                result.target_pose = pose
-                return result
-            await rclpy.task.Future()  # yield (dummy)
-
+        # Nav2 결과 직접 await
         nav_result = await nav_goal_handle.get_result_async()
 
         result = NavigateToRoom.Result()
         result.target_pose = pose
 
-        # status code는 nav2_msgs/action/NavigateToPose 참고
+        # status: 4 = SUCCEEDED, 5 = CANCELED, 6 = ABORTED
+        self.get_logger().info(f"Nav2 finished with status: {nav_result.status}")
+        
         if nav_result.status == 4:  # STATUS_SUCCEEDED
             goal_handle.succeed()
             result.success = True
             result.message = f"Arrived at room {room}"
+            fb.state = "SUCCEEDED"
         else:
             goal_handle.abort()
             result.success = False
             result.message = f"Nav2 failed. status={nav_result.status}"
-
+            fb.state = "FAILED"
+        
+        goal_handle.publish_feedback(fb)
         return result
-
-    def _nav_feedback_cb(self, goal_handle):
-        def cb(msg):
-            fb = NavigateToRoom.Feedback()
-            fb.state = "RUNNING"
-            # NavigateToPose feedback: distance_remaining 제공
-            try:
-                fb.distance_remaining = float(msg.feedback.distance_remaining)
-            except Exception:
-                fb.distance_remaining = -1.0
-            goal_handle.publish_feedback(fb)
-        return cb
 
 
 def main():
@@ -183,6 +178,7 @@ def main():
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == "__main__":
     main()

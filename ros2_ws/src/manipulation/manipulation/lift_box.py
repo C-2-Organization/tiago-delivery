@@ -160,8 +160,8 @@ class LiftBoxServer(Node):
         self.declare_parameter("hook_move_time_sec", 2.0)
 
         # Backup (후진) 파라미터
-        self.declare_parameter("backup_distance_m", 0.10)
-        self.declare_parameter("backup_linear_speed", 0.1)  # m/s (음수로 사용)
+        self.declare_parameter("backup_distance_m", 0.01)
+        self.declare_parameter("backup_linear_speed", 0.01)  # m/s (음수로 사용)
 
         # Left arm lift 파라미터
         self.declare_parameter("left_j2_pre_rotate_deg", 10.0)  # 회전 전 살짝 올리기
