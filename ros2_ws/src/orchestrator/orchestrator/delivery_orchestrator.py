@@ -106,8 +106,8 @@ class DeliveryOrchestrator(Node):
         self.declare_parameter("lift_stage_timeout_sec", 30.0)
         self.declare_parameter("drop_timeout_sec", 200.0)
         self.declare_parameter("drop_stage_timeout_sec", 30.0)
-        self.declare_parameter("drop_approach_distance_m", 0.3)
-        self.declare_parameter("drop_backup_distance_m", 1.5)
+        self.declare_parameter("drop_approach_distance_m", 0.5)
+        self.declare_parameter("drop_backup_distance_m", 2.0)
         self.declare_parameter("navigate_timeout_sec", 300.0)
 
         # State machine timer (10Hz)
